@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const GradeSchema = new mongoose.Schema({
-    id: String,
+    id: Number,
     grade: String,
     marks: Number
 });

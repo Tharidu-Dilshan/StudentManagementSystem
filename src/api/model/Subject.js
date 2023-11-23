@@ -1,9 +1,11 @@
 const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
+const Department = require('./Department');
 
 const SubjectSchema = new mongoose.Schema({
-    id: String,
+    id: Number,
     code: String,
-    departmentId: String,
+    departmentId: { type: String, ref: Department },
     name: String,
     credits: Number
 });
