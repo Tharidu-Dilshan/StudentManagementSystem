@@ -8,6 +8,7 @@ const SubjectSchema = new mongoose.Schema({
     departmentId: { type: String, ref: Department },
     name: String,
     credits: Number
+    //asdfgh
 });
 
 module.exports = mongoose.model('Subject', SubjectSchema);
