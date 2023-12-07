@@ -3,10 +3,10 @@ const Schema = mongoose.Schema;
 const Subject = require ('./Subject');
 
 const EnrolmentSchema = new mongoose.Schema({
-    id: Number,
-    studentRegistrationNumber: { type: Schema.Types.ObjectId, ref: 'Student' },
-    subjectCode: { type: String, ref: Subject },
-    status: String
+    
+    studentRegistrationNumber: { type: Schema.Types.ObjectId, ref: 'Student',required: true },
+    subjectCode: { type: Schema.Types.ObjectId, ref: 'Subject',required: true },
+    status: {type:String , enum:['Pending','Passed','Failed'], default:'Pending'}
 });
 
 module.exports = mongoose.model('Enrolment', EnrolmentSchema);

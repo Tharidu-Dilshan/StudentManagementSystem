@@ -3,11 +3,12 @@ const Schema = mongoose.Schema;
 const Department = require('./Department');
 
 const SubjectSchema = new mongoose.Schema({
-    id: Number,
-    code: String,
-    departmentId: { type: String, ref: Department },
-    name: String,
-    credits: Number
+    
+    code: {type:String ,required:true},
+    departmentId: { type: Schema.Types.ObjectId, ref: 'Department' },
+    name: {type:String ,required:true},
+    credits: {type:Number ,required:true}
+    
 });
 
 module.exports = mongoose.model('Subject', SubjectSchema);

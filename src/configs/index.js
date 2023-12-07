@@ -1,5 +1,9 @@
+const dotenv = require("dotenv");
+
+dotenv.config();
+
 const config = {
-  DB_CONNECTION_STRING: "mongodb+srv://tharindudilshan1999:88422@studentmanagement.nfxipmd.mongodb.net/?retryWrites=true&w=majority",
+  DB_CONNECTION_STRING: process.env.MONGODB_URI,
 };
 
 export default config; 
