@@ -9,6 +9,6 @@ const StudentSchema = new mongoose.Schema({
         type:String,
         require:true
     }
-});
+},{timestamps:true});
 
 module.exports = mongoose.model('Student', StudentSchema);
