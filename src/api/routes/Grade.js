@@ -1,36 +1,49 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const Grade = require('../model/Grade');
+const Grade = require("../model/Grade");
+const { default: logger } = require("../../utils/logger");
 
-// Get all grades
-router.get('/', async (req, res) => {
+// get all grades
+router.get("/", async (req, res) => {
+  try {
     const grades = await Grade.find();
     res.json(grades);
+  } catch (error) {
+    logger.error(error);
+
+    res.status(500).json({ message: "Error with Getting Grades" });
+  }
 });
 
-// Get a grade by id
-router.get('/get/:id', async (req, res) => {
-    const grade = await Grade.findById(req.params.id);
-    res.json(grade);
-});
+// Add a new grade
+router.post("/", async (req, res) => {
+  try {
+    const { grade, minRange, maxRange } = req.body;
 
-// Create a new grade
-router.post('/add', async (req, res) => {
-    const newGrade = new Grade(req.body);
-    const savedGrade = await newGrade.save();
-    res.json(savedGrade);
-});
+    // Check if the grade already exists
+    const existingGrade = await Grade.findOne({ grade: grade });
 
-// Update a grade by id
-router.patch('/update/:id', async (req, res) => {
-    const updatedGrade = await Grade.updateOne({_id: req.params.id}, {$set: req.body});
-    res.json(updatedGrade);
-});
+    if (existingGrade) {
+      // Grade already exists, return an error message
+      return res
+        .status(400)
+        .json({ error: "Grade already exists in the database." });
+    }
 
-// Delete a grade by id
-router.delete('/delete/:id', async (req, res) => {
-    const deletedGrade = await Grade.deleteOne({_id: req.params.id});
-    res.json(deletedGrade);
+    // If the grade doesn't exist, create and save it
+    const newGrade = new Grade({
+      grade: grade,
+      minRange: minRange,
+      maxRange: maxRange,
+    });
+
+    await newGrade.save();
+    res.json(newGrade);
+  } catch (error) {
+    logger.error(error);
+
+    res.status(500).json({ message: "Error with adding Grade" });
+  }
 });
 
 module.exports = router;
