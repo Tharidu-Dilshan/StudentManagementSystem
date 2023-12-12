@@ -3,43 +3,77 @@ const router = express.Router();
 const Admin = require("../model/Admin");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const cookieparser = require("cookie-parser");
+const cookieParser = require("cookie-parser");
+const { default: config } = require("../../configs");
 
-const sec = "kjktjtjtjt";
+const sec = config.SECRET;
 
-router.use(cookieparser());
+router.use(cookieParser());
+router.use(express.json());
 
 // Signup route
 router.post("/signup", async (req, res) => {
-  const { name, password } = req.body;
+  const { userName, password } = req.body;
 
   try {
+    // Validate input
+    if (!userName || !password) {
+      return res
+        .status(400)
+        .json({ error: "User Name and password are required." });
+    }
+
+    // Check if admin with the given User Name already exists
+    const existingAdmin = await Admin.findOne({ userName });
+
+    if (existingAdmin) {
+      return res
+        .status(400)
+        .json({ error: "Admin with this User Name already exists." });
+    }
+
+    // Create a new admin
     const admin = await Admin.create({
-      name,
+      userName,
       password: bcrypt.hashSync(password, bcrypt.genSaltSync(10)),
     });
+
     res.json(admin);
   } catch (err) {
-    res.status(400).json(err);
+    res.status(400).json({ error: err.message || "Error creating admin." });
   }
 });
 
 // Login route
 router.post("/login", async (req, res) => {
-  const { name, password } = req.body;
-  const admin = await Admin.findOne({ name });
+  const { userName, password } = req.body;
 
-  const passwordOk = bcrypt.compareSync(password, admin.password);
+  try {
+    // Validate input
+    if (!userName || !password) {
+      return res
+        .status(400)
+        .json({ error: "User Name and password are required." });
+    }
 
-  if (passwordOk) {
+    const admin = await Admin.findOne({ userName });
+
+    if (!admin || !bcrypt.compareSync(password, admin.password)) {
+      return res.status(400).json({ error: "Invalid credentials." });
+    }
+
     // Generate a JWT token and set it as a cookie
-    jwt.sign({ name, id: admin._id }, sec, {}, (err, token) => {
-      if (err) throw err;
+    jwt.sign({ userName, id: admin._id }, sec, {}, (err, token) => {
+      if (err) {
+        return res.status(500).json({ error: "Error generating token." });
+      }
 
-      res.cookie("token", token).json("You are successfully logged in");
+      res
+        .cookie("token", token)
+        .json({ message: "You are successfully logged in" });
     });
-  } else {
-    res.status(400).json("Wrong credentials");
+  } catch (err) {
+    res.status(500).json({ error: err.message || "Error during login." });
   }
 });
 
@@ -52,10 +86,10 @@ router.get("/profile", async (req, res) => {
 
     // Return the admin's profile information
     res.json({
-      name: admin.name,
+      userName: admin.userName,
     });
   } catch (err) {
-    res.status(401).json("Unauthorized");
+    res.status(401).json({ error: "Unauthorized" });
   }
 });
 
@@ -74,10 +108,10 @@ router.put("/profile", async (req, res) => {
 
     // Return the updated admin information
     res.json({
-      name: admin.name,
+      userName: admin.userName,
     });
   } catch (err) {
-    res.status(401).json("Unauthorized");
+    res.status(401).json({ error: "Unauthorized" });
   }
 });
 
@@ -91,15 +125,15 @@ router.delete("/profile", async (req, res) => {
     await Admin.findByIdAndDelete(decodedToken.id);
 
     // Clear the cookie
-    res.clearCookie("token").json("Your account has been deleted");
+    res.clearCookie("token").json({ message: "Your account has been deleted" });
   } catch (err) {
-    res.status(401).json("Unauthorized");
+    res.status(401).json({ error: "Unauthorized" });
   }
 });
 
 // Logout route
 router.post("/logout", (req, res) => {
-  res.clearCookie("token").json("You have been logged out");
+  res.clearCookie("token").json({ message: "You have been logged out" });
 });
 
 // Get all admins route
@@ -108,7 +142,7 @@ router.get("/admins", async (req, res) => {
     const admins = await Admin.find();
     res.json(admins);
   } catch (err) {
-    res.status(500).json(err);
+    res.status(500).json({ error: err.message || "Error fetching admins" });
   }
 });
 
@@ -122,7 +156,7 @@ router.delete("/admins/:id", async (req, res) => {
       res.status(404).json(`Admin with ID ${req.params.id} not found`);
     }
   } catch (err) {
-    res.status(500).json(err);
+    res.status(500).json({ error: err.message || "Error deleting admin" });
   }
 });
 

@@ -1,14 +1,18 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
-const StudentSchema = new mongoose.Schema({
-    name: {type:String ,required:true},
-    age: {type:Number ,required:true},
-    gender: {type:String ,required:true , enum:['male','female']},
-    address: {type:String ,required:true},
+const StudentSchema = new mongoose.Schema(
+  {
+    name: { type: String, required: true },
+    age: { type: Number, required: true },
+    gender: { type: String, required: true, enum: ["male", "female"] },
+    address: { type: String, required: true },
     registerNumber: {
-        type:String,
-        require:true
-    }
-},{timestamps:true});
+      type: String,
+      require: true,
+      unique: true,
+    },
+  },
+  { timestamps: true }
+);
 
-module.exports = mongoose.model('Student', StudentSchema);
+module.exports = mongoose.model("Student", StudentSchema);
